@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const port = process.env.port || 4000
+//const port = process.env.port || 4000
 const database = require('./databaseFile')
 const md5 = require('md5')
 const data = database.initDatabase()
@@ -179,7 +179,12 @@ function showError(err){
     //if an error occurred return error object...
     return {error:true,msg:err}
 }
-app.listen(port,()=>{
-    console.log('server started on '+port)
-})
-module.exports = app
+function start(port){
+    app.listen(port,()=>{
+        console.log('infoAuthenticator server started on '+port)
+    })
+}
+
+module.exports.server = app
+module.exports.start = start
+

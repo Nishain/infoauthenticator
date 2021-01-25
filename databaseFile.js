@@ -3,7 +3,8 @@ var database
 const fileName = './database.json'
 const dbFunctions = {
  initDatabase : function(){
-    var content = fs.readFileSync(fileName,{encoding:'utf8'})
+    
+    var content = fs.existsSync(fileName)?fs.readFileSync(fileName,{encoding:'utf8'}):''
     if(content.length==0)
         content = '[]'
     database = JSON.parse(content)
