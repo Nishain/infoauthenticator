@@ -1,0 +1,54 @@
+[
+  {
+    "_meta": {
+      "sharePassword": [
+        {
+          "name": "Isuru",
+          "password": "202cb962ac59075b964b07152d234b70",
+          "fields": [
+            "location",
+            "contact"
+          ],
+          "_meta": {
+            "type": 2
+          }
+        }
+      ],
+      "type": 1
+    },
+    "username": "Nishain",
+    "password": "68053af2923e00204c3ca7c6a3150cf7",
+    "firstName": "Nishain",
+    "contactNo": "0770665281",
+    "location": "galle",
+    "friendLoc": "${Lasan}.location",
+    "fname": "${kasun}.name"
+  },
+  {
+    "username": "Lasan",
+    "password": "202cb962ac59075b964b07152d234b70",
+    "name": "Lasan",
+    "location": "melbourn",
+    "_meta": {}
+  },
+  {
+    "username": "kasun",
+    "password": "202cb962ac59075b964b07152d234b70",
+    "name": {
+      "firstname": "kasun",
+      "lastname": "Dasanka"
+    },
+    "location": "melbourn",
+    "_meta": {
+      "type": 1,
+      "shareInfomation": [
+        {
+          "username": "Nishain",
+          "fields": [
+            "name"
+          ]
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "name": "infoauthenticator",
+  "version": "1.0.3",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nishain",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "md5": "^2.3.0"
+  }
+}
