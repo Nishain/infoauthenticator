@@ -1,18 +1,20 @@
 const md5 = require('md5')
 const database = require('./databaseFile')
+const showError = require('./showError')
 var currentUser
 const app = require('express').Router()
 const users = require('./user')
+const trimPassword = require('./trimPassword')
 
 //check and validating the entry point to 'admin' endpoint
 app.use('/',(req,res,next)=>{
     currentUser = req.currentUser
     if(currentUser._meta.type==2){//secure this endpoint to be used against subusers/collabarate users..
-        return res.send('only admin users can use this endpoint')
+        return res.send(showError('only admin users can use this endpoint'))
     }
     //the fields property mandatory to be an array..
     if(req.body.fields && !Array.isArray(req.body.fields))
-        return res.send("'field' should be an array property.Please check your JSON body")
+        return res.send(showError("'field' should be an array property.Please check your JSON body"))
     next()
 })
 
@@ -29,11 +31,11 @@ app.post('/access',(req,res)=>{
     if(currentUser._meta.subUsers){
         //the new user's password or name cannot be conflicted with other users...
         if(currentUser._meta.subUsers.find(s=>s.name==newAccess.name || s.password==newAccess.password))
-            return res.send('a sub-user already exist with same name or password')
+            return res.send(showError('a sub-user already exist with same name or password'))
         currentUser._meta.subUsers.push(newAccess)
     }else//for first time setting the new user
         currentUser._meta.subUsers = [newAccess]
-    res.send(newAccess)
+    res.send(trimPassword(newAccess))
     database.updateSingleUser(currentUser)
 })
 
@@ -41,25 +43,25 @@ app.post('/access',(req,res)=>{
 app.delete('/access/:name',(req,res)=>{
     const deleteIndex = currentUser._meta.subUsers.findIndex(u=>u.name==req.params.name)
     if(deleteIndex==-1)
-        return res.send('removing user does not exist')
+        return res.send(showError('removing user does not exist'))
     res.send(currentUser._meta.subUsers.splice(deleteIndex,1)[0])
-    database.updateSingleUser(currentUser)
+    database.updateSingleUser(trimPassword(currentUser))
 })
 
 //updating the accessible fields for sub-user
 app.put('/access/:name',(req,res)=>{ 
     const updateUser = currentUser._meta.subUsers.find(u=>u.name==req.params.name)
     if(!updateUser)
-        return res.send('updating user does not exist')
+        return res.send(showError('updating user does not exist'))
     updateUser.fields = req.body.fields
-    res.send(updateUser)
+    res.send(trimPassword(updateUser))
     database.updateSingleUser(currentUser)
 })
 
 //view shared data fields with shared users
 app.get('/share',(req,res)=>{
     if(!currentUser._meta.shareInfomation)
-        return res.send('you have not setup sharing yet')
+        return res.send(showError('you have not setup sharing yet'))
     res.send(currentUser._meta.shareInfomation)
 })
 
@@ -71,7 +73,7 @@ app.post('/share',(req,res)=>{
     }
     if(currentUser._meta.shareInfomation){   
         if(currentUser._meta.shareInfomation.find(s=>s.username==shareUser.username))
-            return res.send('you are already sharing with this user')
+            return res.send(showError('you are already sharing with this user'))
         currentUser._meta.shareInfomation.push(shareUser)
     }
     else    
@@ -84,7 +86,7 @@ app.post('/share',(req,res)=>{
 app.put('/share/:username',(req,res)=>{
     const updatingShareUser = currentUser._meta.shareInfomation.find(u=>u.name==req.params.name)
     if(!updatingShareUser)
-        return res.send('updating entity does not exist')
+        return res.send(showError('updating entity does not exist'))
     updatingShareUser.fields = req.body.fields
     res.send(updatingShareUser)
     database.updateSingleUser(currentUser)
@@ -95,7 +97,7 @@ app.delete('/share/:username',(req,res)=>{
     const paramUsername = req.params.username
     const removingIndex = currentUser._meta.shareInfomation.findIndex(u=>u.username==paramUsername)
     if(removingIndex==-1)
-        return res.send('username to be purged does not exist in share list')
+        return res.send(showError('username to be purged does not exist in share list'))
     else 
         res.send(currentUser._meta.shareInfomation.splice(removingIndex,1)[0])  
         database.updateSingleUser(currentUser)  

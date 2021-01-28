@@ -22,7 +22,8 @@
     "contactNo": "0770665281",
     "location": "galle",
     "friendLoc": "${Lasan}.location",
-    "fname": "${kasun}.name"
+    "fname": "${kasun}.name",
+    "hobby": "nothing"
   },
   {
     "username": "Lasan",

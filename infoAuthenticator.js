@@ -1,33 +1,11 @@
 const express = require('express')
 const app = express()
+const trimPassword = require('./trimPassword')
+const showError = require('./showError')
 //const port = process.env.port || 4000
 const database = require('./databaseFile')
 const md5 = require('md5')
 const data = database.initDatabase()
-/* [
-
-    {
-        _meta:{
-            subUsers:[{name:'Isuru',password:'30459',fields:['contactNo','friendLoc']}]
-        },
-        username:'Nishain',
-        password:'34535',
-        firstName:'Nishain',
-        contactNo:'0770665281',
-        location:'galle',
-        friendLoc:'${Lasan}.location'
-    },
-    {
-        _meta:{
-            shareInfomation:[{username:'Nishain',fields:["location"]}]
-        },
-        username:'Lasan',
-        password:'583o45',
-        firstName:'Lasane',
-        contactNo:'4523453455',
-        location:'melbourn'
-    }
-    ]*/
 var currentUser = {}
 app.use(express.json())
 function authencicate(req,res,next){
@@ -35,6 +13,8 @@ function authencicate(req,res,next){
         return next()
     const username = req.headers.username
     const password = req.headers.password
+    if(!(username && password))
+        return res.send(showError('should include password and username in headers'))
     user = authorize(username,md5(password))
     if(!user)
         return res.send({errorCode:'unauthorized'})
@@ -46,7 +26,7 @@ app.use(authencicate)
 
 app.get('/users',(req,res)=>{
     const username = req.headers.username
-    res.send(getData(username))
+    res.send(trimPassword(getData(username)))
 })
 app.post('/users',(req,res)=>{
     const newUser = {}
@@ -60,10 +40,12 @@ app.post('/users',(req,res)=>{
             return res.send(showError("cannot start a field with _"))
         newUser[property] = req.body[property]
     }
+    if(user=={})
+        return res.send(showError("You haven't specified any fields nothing to update!"))
     newUser.password = md5(newUser.password)
     newUser._meta={}
     database.createUser(newUser)
-    res.send(newUser)
+    res.send(trimPassword(newUser))
 })
 
 app.get('/access',(req,res)=>{
@@ -175,16 +157,13 @@ function getSharedInformation(value,accOwner){
     }else
         return showError('user didn\'t setup sharing yet')    
 }
-function showError(err){
-    //if an error occurred return error object...
-    return {error:true,msg:err}
-}
+
 function start(port){
     app.listen(port,()=>{
         console.log('infoAuthenticator server started on '+port)
     })
 }
-
+start(3000)
 module.exports.server = app
 module.exports.start = start
 
