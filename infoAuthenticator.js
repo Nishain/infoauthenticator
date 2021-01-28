@@ -8,7 +8,7 @@ const md5 = require('md5')
 const data = database.initDatabase()
 var currentUser = {}
 app.use(express.json())
-function authencicate(req,res,next){
+function authenticate(req,res,next){
     if(req.method == 'POST' && req.path.startsWith('/users'))
         return next()
     const username = req.headers.username
@@ -22,7 +22,7 @@ function authencicate(req,res,next){
      req.currentUser = currentUser
      next()   
 }
-app.use(authencicate)
+app.use(authenticate)
 
 app.get('/users',(req,res)=>{
     const username = req.headers.username
@@ -40,8 +40,8 @@ app.post('/users',(req,res)=>{
             return res.send(showError("cannot start a field with _"))
         newUser[property] = req.body[property]
     }
-    if(user=={})
-        return res.send(showError("You haven't specified any fields nothing to update!"))
+    if(Object.keys(newUser).length<3)
+        return res.send(showError("You haven't specified any fields nothing to create!"))
     newUser.password = md5(newUser.password)
     newUser._meta={}
     database.createUser(newUser)
@@ -56,7 +56,9 @@ app.get('/access',(req,res)=>{
 })
 const adminFunctions = require('./adminFunctions')
 app.use('/admin/',adminFunctions)
-
+app.use((req,res)=>{
+    res.send(showError("Sorry your request doesn't matched any route"))
+})
 function getCompanions(){  
     //if the user doesn't have any subuser then return empty array
     if(!currentUser._meta.subUsers || currentUser._meta.subUsers.length==0)
