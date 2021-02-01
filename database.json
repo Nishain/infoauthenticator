@@ -1,13 +1,14 @@
 [
   {
     "_meta": {
-      "sharePassword": [
+      "subUsers": [
         {
           "name": "Isuru",
           "password": "202cb962ac59075b964b07152d234b70",
           "fields": [
             "location",
-            "contact"
+            "contact",
+            "friendLoc"
           ],
           "_meta": {
             "type": 2
@@ -22,7 +23,7 @@
     "contactNo": "0770665281",
     "location": "galle",
     "friendLoc": "${Lasan}.location",
-    "fname": "${kasun}.name",
+    "fname": [{"closeFriend":true},{"friend":"${kasun}.name"}],
     "hobby": "nothing"
   },
   {

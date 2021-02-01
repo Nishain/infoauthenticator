@@ -30,7 +30,7 @@ app.put('/users/',(req,res)=>{
 app.delete('/users/',(req,res)=>{
     const deletingUser = req.currentUser
     if(deletingUser.username)
-    database.deleteUser(deletingUser)
+        database.deleteUser(deletingUser)
     res.send(trimPassword(deletingUser))
 })
 module.exports = app

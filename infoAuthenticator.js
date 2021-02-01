@@ -23,10 +23,9 @@ function authenticate(req,res,next){
      next()   
 }
 app.use(authenticate)
-
-app.get('/users',(req,res)=>{
+app.get('/users/:options?',(req,res)=>{
     const username = req.headers.username
-    res.send(trimPassword(getData(username)))
+    res.send(trimPassword(getData(username,req.params.options=="showArchitecture")))
 })
 app.post('/users',(req,res)=>{
     const newUser = {}
@@ -98,7 +97,7 @@ function getAccessFields(){
         fields:currentUser.fields
     }
 }
-function getData(username){
+function getData(username,showArchitecture){
     var result={}
     if(currentUser._meta.type==1){
         for (const key in user) {
@@ -106,11 +105,10 @@ function getData(username){
             if(key=='_meta')
                 continue
             //check if the field is referencing to another user    
-            if(typeof currentUser[key]=='string' && /\${.+}\.\w+$/.test(currentUser[key]))
-                result[key] = getSharedInformation(currentUser[key],username)
-            else
             //or just add the field to result object
-                result[key] = user[key]
+            result[key] = user[key]
+            if(!showArchitecture)
+                    result[key] = replaceReferencesWithValues(user[key],username)
         }   
         return result
     } 
@@ -120,18 +118,35 @@ function getData(username){
             const user = data.find(u=>u.username==username)
             for(field of currentUser.fields){
             //check if the field is referencing to another user 
-            if(typeof user[field]=='string' && /\${.+}\.\w+$/.test(user[field]))
-                result[field] = getSharedInformation(user[field],username)
-            else
                 result[field] = user[field]==undefined?showError('user doesn\'t have such field'):user[field]
+                if(!showArchitecture)
+                    result[field] = replaceReferencesWithValues(result[field],username)
+                console.log(result[field])    
         }
         return result
     }
     
 }
+function replaceReferencesWithValues(value,accOwner){
+    if(typeof value == 'string'){
+        if(/\${.+}\.\w+$/.test(value))
+            value = getSharedInformation(value,accOwner)    
+    }
+    else if(typeof value == 'object'){
+        for (const key in value) {           
+            value[key] = replaceReferencesWithValues(value[key],accOwner)
+        }
+    }else if(Array.isArray(value)){
+        value.map(v=>{
+            replaceReferencesWithValues(v,accOwner)
+        })
+    }
+    return value
+}
 function getSharedInformation(value,accOwner){
     //extracting the username of the referencing user...
     //refrencing format style - ${username}.fieldName
+
     let foreignUsername = value.substring(value.indexOf('{')+1,value.lastIndexOf('}'))   
     //extract the field name user want to access
     let field = value.substring(value.lastIndexOf('.')+1)
